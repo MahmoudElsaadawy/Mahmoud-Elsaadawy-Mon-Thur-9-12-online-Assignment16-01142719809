@@ -10,10 +10,12 @@ const morgan_1 = __importDefault(require("morgan"));
 const mongoose_connection_1 = require("./DB/mongoose.connection");
 const error_exceptions_1 = require("./utils/error.exceptions");
 const auth_controller_1 = __importDefault(require("./modules/auth/auth.controller"));
+const redis_connection_1 = require("./DB/redis.connection");
 const bootstrap = async () => {
     const app = (0, express_1.default)();
     const port = process.env.PORT;
     await (0, mongoose_connection_1.connectDB)();
+    await redis_connection_1.redisClient.connect();
     app.use(express_1.default.json());
     app.use((0, morgan_1.default)("dev"));
     app.use("/auth", auth_controller_1.default);

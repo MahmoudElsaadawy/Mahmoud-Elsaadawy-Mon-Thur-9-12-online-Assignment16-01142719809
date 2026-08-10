@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import chalk from "chalk";
 
 export const connectDB = async () => {
   const dbUri = process.env.DB_LOCAL_URI;
@@ -11,8 +12,10 @@ export const connectDB = async () => {
         serverSelectionTimeoutMS: 3000,
       })
       .then(() => {
-        console.log("connected to database successfully");
+        console.log(chalk.bgGreen("Connected to database successfully"));
       })
-      .catch(console.log);
+      .catch((err) => {
+        console.log(chalk.bgRed(err.message));
+      });
   }
 };

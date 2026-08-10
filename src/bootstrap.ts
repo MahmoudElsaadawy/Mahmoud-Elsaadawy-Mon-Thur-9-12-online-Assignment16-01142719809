@@ -4,13 +4,14 @@ import morgan from "morgan"
 import { connectDB } from "./DB/mongoose.connection"
 import { globalErrorHandler, NotFoundException } from "./utils/error.exceptions"
 import authRouter from "./modules/auth/auth.controller"
-import z from "zod"
+import { redisClient } from "./DB/redis.connection"
 
 export const bootstrap = async()=> {
   const app = express()
   const port = process.env.PORT
   
   await connectDB()
+  await redisClient.connect()
 
   app.use(express.json())
   app.use(morgan("dev"))

@@ -1,19 +1,31 @@
 import { type Request, Response } from "express";
-import User from "../../DB/models/user/user.model";
+import User from "../user/models/user.model";
 import {
   ConflictException,
   BadRequestException,
   UnauthorizedException,
 } from "../../utils/error.exceptions";
-import { successResponse } from "../../utils/success.response";
-import { ProviderEnum } from "../../DB/models/user/user.types";
+import { ProviderEnum } from "../user/types/user.types";
 import { compare } from "../../utils/security/hashing";
-import { signUpData } from "./auth.validation";
+import { signUpData, loginData, confirmEmailData } from "./auth.validation";
+import { generateOtp } from "../../utils/email/generateOtp";
+import { sendEmail } from "../../utils/email/sendEmail";
+import { generateOtpHtml } from "../../utils/email/confirm.template";
+import {
+  redisDel,
+  redisGet,
+  redisSet,
+  redisTTL,
+  redisKeys,
+  generateOtpKey,
+  jwtIdKey,
+} from "../../utils/redis/redis.service";
+import { generateToken, verifyToken } from "../../utils/security/token";
+import { nanoid } from "nanoid";
 
-class AuthService {
+export class AuthServices {
   async signup(data: signUpData) {
-    const { name, email, password, phone, age, gender, role, bio } = req.body;
-
+    const { name, email, password, phone, age, gender, role, bio } = data;
     const userExist = await User.findOne({ email });
     if (userExist) {
       throw new ConflictException("User Already Exists");
@@ -27,55 +39,121 @@ class AuthService {
       age,
       gender,
       role,
-      bio,
+      bio: bio ? bio : "",
     });
 
-    successResponse({
-      res,
-      message: "User Created Successfully",
-      data: userCreated,
+    const otp = generateOtp();
+    sendEmail({
+      to: email,
+      subject: "Confirm your email",
+      html: generateOtpHtml(name, otp),
     });
+
+    redisSet(generateOtpKey(userCreated.id), otp, 5);
+    return userCreated;
+  }
+
+  async confirmEmail(data: confirmEmailData) {
+    const { email, otp } = data;
+    const user = await User.findOne({
+      email,
+      confirmedAt: {
+        $exists: false,
+      },
+    });
+
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+
+    const userOtp = await redisGet(generateOtpKey(user.id));
+    if (!userOtp) {
+      throw new BadRequestException("Otp expired");
+    }
+
+    if (userOtp != otp) {
+      throw new BadRequestException("Invalid Otp");
+    }
+
+    user.confirmedAt = new Date();
+    await redisDel(generateOtpKey(user.id));
+    await user.save();
+
+    return { data: {} };
+  }
+
+  async login(data: loginData) {
+    const { email, password } = data;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      throw new UnauthorizedException("Invalid email or password");
+    }
+
+    if (!user.confirmedAt) {
+      throw new BadRequestException("please confirm your email first");
+    }
+
+    if (user.provider > ProviderEnum.system) {
+      throw new BadRequestException("use social login");
+    }
+
+    const matchedPassword = await compare(password, user.password);
+
+    if (!matchedPassword) {
+      throw new UnauthorizedException("Invalid email or password");
+    }
+
+    const jwtAccess = process.env.ACCESS_JWT;
+    const jwtRefresh = process.env.REFRESH_JWT;
+    const jwtidAccess = nanoid(20);
+    const jwtidRefresh = nanoid(20);
+
+    if (jwtAccess && jwtRefresh) {
+      const accessToken = generateToken(
+        {
+          id: user.id,
+        },
+        jwtAccess,
+        {
+          expiresIn: "30M",
+          jwtid: jwtidAccess,
+        },
+      );
+
+      const refreshToken = generateToken(
+        {
+          id: user.id,
+        },
+        jwtRefresh,
+        {
+          expiresIn: "7D",
+          jwtid: jwtidRefresh,
+        },
+      );
+      redisSet(jwtIdKey(user.id, "accessToken"), jwtidAccess, 30);
+      redisSet(jwtIdKey(user.id, "refreshToken"), jwtidRefresh, 7 * 60 * 24);
+      return {
+        accessToken,
+        refreshToken,
+      };
+    }
+
+    const userObj = user.toObject();
+    const {
+      _id,
+      __v,
+      isOnline,
+      isActive,
+      password: _password,
+      createdAt,
+      updatedAt,
+      ...safeUserData
+    } = userObj;
+
+    return safeUserData;
   }
 }
-export const signupService = async (req: Request, res: Response) => {
 
-  
-};
-
-export const loginService = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
-
-  const user = await User.findOne({ email });
-
-  if (!user) {
-    throw new UnauthorizedException("Invalid email or password");
-  }
-
-  if (user.provider > ProviderEnum.system) {
-    throw new BadRequestException("use social login");
-  }
-
-  const matchedPassword = await compare(password, user.password);
-
-  if (!matchedPassword) {
-    throw new UnauthorizedException("Invalid email or password");
-  }
-
-  const userObj = user.toObject();
-  const {
-    _id,
-    __v,
-    isOnline,
-    isActive,
-    password: _password,
-    createdAt,
-    updatedAt,
-    ...safeUserData
-  } = userObj;
-
-  successResponse({
-    res,
-    message: "logged in successfully",
-    data: safeUserData,
-  });
-};
+export default new AuthServices();

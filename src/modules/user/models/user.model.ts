@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { IUser, GenderEnum, ProviderEnum, RoleEnum } from "./user.types";
+import { IUser, GenderEnum, ProviderEnum, RoleEnum } from "../types/user.types";
 import { hash } from "../../../utils/security/hashing";
 import { encrypt, decrypt } from "../../../utils/security/encryption";
 
@@ -22,12 +22,12 @@ const UserSchema = new mongoose.Schema<IUser>(
     },
     phone: {
       type: String,
-      set: function(value: string) {
-        return encrypt(value)
+      set: function (value: string) {
+        return encrypt(value);
       },
-      get: function(value: string) {
-        return decrypt(value)
-      }
+      get: function (value: string) {
+        return decrypt(value);
+      },
     },
     age: {
       type: Number,
@@ -74,21 +74,19 @@ const UserSchema = new mongoose.Schema<IUser>(
   {
     timestamps: true,
     toJSON: {
-       getters: true 
-      },
-    toObject: { 
-      getters: true 
+      getters: true,
+    },
+    toObject: {
+      getters: true,
     },
   },
 );
 
-UserSchema.pre("save", async function() {
-  if(this.isModified("password")){
-    this.password = await hash(this.password)
+UserSchema.pre("save", async function () {
+  if (this.isModified("password")) {
+    this.password = await hash(this.password);
   }
-})
-
-
+});
 
 const userModel = mongoose.model("User", UserSchema);
 

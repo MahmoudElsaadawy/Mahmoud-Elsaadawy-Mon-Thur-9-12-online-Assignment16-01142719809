@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.connectDB = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
+const chalk_1 = __importDefault(require("chalk"));
 const connectDB = async () => {
     const dbUri = process.env.DB_LOCAL_URI;
     const dbVersion = process.env.DB_LOCAL_VERSION;
@@ -15,9 +16,11 @@ const connectDB = async () => {
             serverSelectionTimeoutMS: 3000,
         })
             .then(() => {
-            console.log("connected to database successfully");
+            console.log(chalk_1.default.bgGreen("Connected to database successfully"));
         })
-            .catch(console.log);
+            .catch((err) => {
+            console.log(chalk_1.default.bgRed(err.message));
+        });
     }
 };
 exports.connectDB = connectDB;
