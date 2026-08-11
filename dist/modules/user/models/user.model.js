@@ -75,6 +75,9 @@ const UserSchema = new mongoose_1.default.Schema({
     },
 }, {
     timestamps: true,
+    strictQuery: true,
+    strict: true,
+    optimisticConcurrency: true,
     toJSON: {
         getters: true,
     },

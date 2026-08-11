@@ -3,7 +3,8 @@ import chalk from "chalk"
 import morgan from "morgan"
 import { connectDB } from "./DB/mongoose.connection"
 import { globalErrorHandler, NotFoundException } from "./utils/error.exceptions"
-import authRouter from "./modules/auth/auth.controller"
+import authRouter, { routes as authRoutes} from "./modules/auth/auth.controller"
+import userRouter, { routes as userRoutes} from "./modules/user/user.controller"
 import { redisClient } from "./DB/redis.connection"
 
 export const bootstrap = async()=> {
@@ -16,7 +17,8 @@ export const bootstrap = async()=> {
   app.use(express.json())
   app.use(morgan("dev"))
   
-  app.use("/auth", authRouter)
+  app.use(authRoutes.base, authRouter)
+  app.use(userRoutes.base, userRouter)
   
   app.use(globalErrorHandler)
   app.listen(port, ()=> {

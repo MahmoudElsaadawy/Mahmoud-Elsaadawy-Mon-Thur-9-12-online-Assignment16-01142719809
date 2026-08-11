@@ -13,7 +13,7 @@ export class AppError extends Error {
 }
 
 export class NotFoundException extends AppError {
-  constructor(message: string = "not found", options: ErrorOptions = {}){
+  constructor(message: string = "Not found", options: ErrorOptions = {}){
     super(message, options, 404)
   }
 }
@@ -38,7 +38,7 @@ export class ConflictException extends AppError {
 
 export class validationException extends AppError {
   constructor(validationErrors: z.core.$ZodIssue[], options: ErrorOptions = {}){
-    super("validation error", options, 422, validationErrors)
+    super("Validation error", options, 422, validationErrors)
   }
 }
 

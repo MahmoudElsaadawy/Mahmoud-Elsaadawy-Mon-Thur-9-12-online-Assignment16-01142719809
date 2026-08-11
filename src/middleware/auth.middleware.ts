@@ -3,11 +3,11 @@ import { UnauthorizedException, BadRequestException } from "../utils/error.excep
 import { verifyToken } from "../utils/security/token"
 import User from "../modules/user/models/user.model"
 import { jwtIdKey, redisGet } from "../utils/redis/redis.service" 
-import { IUser } from "../modules/user/types/user.types"
+import { HUser } from "../modules/user/types/user.types"
 
 declare module "express-serve-static-core" {
   interface Request {
-  user?: IUser
+  user: HUser
   }
 }
 
@@ -52,10 +52,10 @@ export const decodeToken = async(authorization: string | undefined, tokenType: T
     throw new BadRequestException("Please confirm your email first")
   }
 
-  const sessionAccessKey = jwtIdKey(user.id, tokenType)
-  const session = await redisGet(sessionAccessKey)
+  const redisAccessKey = jwtIdKey(user.id, tokenType)
+  const redisJti = await redisGet(redisAccessKey)
 
-  if (session != payload.jti) {
+  if (redisJti != payload.jti) {
     throw new UnauthorizedException()
   }
   return { user }

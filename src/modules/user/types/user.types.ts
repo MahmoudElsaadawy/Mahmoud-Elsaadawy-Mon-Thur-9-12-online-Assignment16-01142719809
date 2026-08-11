@@ -1,3 +1,5 @@
+import { HydratedDocument } from "mongoose"
+
 export enum GenderEnum {
   male,
   female,
@@ -32,3 +34,5 @@ export interface IUser{
   createdAt?:Date,
   updatedAt?:Date,
 }
+
+export type HUser = HydratedDocument<IUser>

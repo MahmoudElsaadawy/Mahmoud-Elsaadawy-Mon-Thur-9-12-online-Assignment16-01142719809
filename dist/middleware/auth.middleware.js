@@ -43,9 +43,9 @@ const decodeToken = async (authorization, tokenType = Tokens.access) => {
     if (!user.confirmedAt) {
         throw new error_exceptions_1.BadRequestException("Please confirm your email first");
     }
-    const sessionAccessKey = (0, redis_service_1.jwtIdKey)(user.id, tokenType);
-    const session = await (0, redis_service_1.redisGet)(sessionAccessKey);
-    if (session != payload.jti) {
+    const redisAccessKey = (0, redis_service_1.jwtIdKey)(user.id, tokenType);
+    const redisJti = await (0, redis_service_1.redisGet)(redisAccessKey);
+    if (redisJti != payload.jti) {
         throw new error_exceptions_1.UnauthorizedException();
     }
     return { user };

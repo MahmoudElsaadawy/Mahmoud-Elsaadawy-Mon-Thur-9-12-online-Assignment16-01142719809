@@ -1,33 +1,32 @@
-import User from "../user/models/user.model";
-import {
-  ConflictException,
-  BadRequestException,
-  UnauthorizedException,
-  NotFoundException,
-} from "../../utils/error.exceptions";
-import { ProviderEnum } from "../user/types/user.types";
-import { compare } from "../../utils/security/hashing";
-import {
-  signUpData,
-  loginData,
-  confirmEmailData,
-  resendOtpData,
-} from "./auth.validation";
+import { nanoid } from "nanoid";
+import { Tokens } from "../../middleware/auth.middleware";
+import { generateOtpHtml } from "../../utils/email/confirm.template";
 import { generateOtp } from "../../utils/email/generateOtp";
 import { sendEmail } from "../../utils/email/sendEmail";
-import { generateOtpHtml } from "../../utils/email/confirm.template";
 import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+  UnauthorizedException,
+} from "../../utils/error.exceptions";
+import {
+  generateOtpKey,
+  jwtIdKey,
   redisDel,
   redisGet,
   redisSet,
-  redisTTL,
-  redisKeys,
-  generateOtpKey,
-  jwtIdKey,
+  redisTTL
 } from "../../utils/redis/redis.service";
-import { generateToken, verifyToken } from "../../utils/security/token";
-import { nanoid } from "nanoid";
-import { Tokens } from "../../middleware/auth.middleware";
+import { compare } from "../../utils/security/hashing";
+import { generateToken } from "../../utils/security/token";
+import User from "../user/models/user.model";
+import { ProviderEnum } from "../user/types/user.types";
+import {
+  confirmEmailData,
+  loginData,
+  resendOtpData,
+  signUpData,
+} from "./auth.validation";
 
 export class AuthServices {
   async signup(data: signUpData) {

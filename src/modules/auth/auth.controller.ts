@@ -1,13 +1,13 @@
 import { Router } from "express";
-import { validation } from "../../middleware/validation.middleware";
-import authServices from "./auth.services";
-import * as authValidation from "./auth.validation";
-import { successResponse } from "../../utils/success.response";
 import { auth } from "../../middleware/auth.middleware";
+import { validation } from "../../middleware/validation.middleware";
+import { successResponse } from "../../utils/success.response";
+import authServices from "./auth.service";
+import * as authValidation from "./auth.validation";
 
 const router = Router();
 
-const routes = {
+export const routes = {
   base: "/auth",
   signup: "/signup",
   confirmEmail: "/confirm-email",

@@ -39,62 +39,44 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.routes = void 0;
 const express_1 = require("express");
 const auth_middleware_1 = require("../../middleware/auth.middleware");
-const validation_middleware_1 = require("../../middleware/validation.middleware");
 const success_response_1 = require("../../utils/success.response");
-const auth_service_1 = __importDefault(require("./auth.service"));
-const authValidation = __importStar(require("./auth.validation"));
+const user_service_1 = __importDefault(require("./user.service"));
+const validation_middleware_1 = require("../../middleware/validation.middleware");
+const userValidation = __importStar(require("./user.validation"));
 const router = (0, express_1.Router)();
 exports.routes = {
-    base: "/auth",
-    signup: "/signup",
-    confirmEmail: "/confirm-email",
-    login: "/login",
-    resendEmailOtp: "/resend-email-otp",
-    profile: "/profile"
+    base: "/users",
+    myProfile: "/profile",
+    sendFriendRequest: "/send-friend-request",
+    friendRequestReply: "/friend-request-reply/:id",
 };
-router.post(exports.routes.signup, (0, validation_middleware_1.validation)(authValidation.signupSchema), async (req, res) => {
-    const signupData = req.body;
-    const data = await auth_service_1.default.signup(signupData);
-    (0, success_response_1.successResponse)({
-        res,
-        message: "User created successfully",
-        data,
-    });
-});
-router.patch(exports.routes.confirmEmail, (0, validation_middleware_1.validation)(authValidation.confirmEmailSchema), async (req, res) => {
-    const confirmEmailData = req.body;
-    const data = await auth_service_1.default.confirmEmail(confirmEmailData);
-    (0, success_response_1.successResponse)({
-        res,
-        message: "Email confirmed successfully",
-        data,
-    });
-});
-router.post(exports.routes.login, (0, validation_middleware_1.validation)(authValidation.loginSchema), async (req, res) => {
-    const loginData = req.body;
-    const data = await auth_service_1.default.login(loginData);
-    (0, success_response_1.successResponse)({
-        res,
-        message: "Logged in successfully",
-        data,
-    });
-});
-router.patch(exports.routes.resendEmailOtp, (0, validation_middleware_1.validation)(authValidation.resendOtpSchema), async (req, res) => {
-    const resendData = req.body;
-    const data = await auth_service_1.default.resendOtp(resendData);
-    (0, success_response_1.successResponse)({
-        res,
-        message: "Otp sent successfully",
-        data,
-    });
-});
-router.get(exports.routes.profile, auth_middleware_1.auth, (req, res) => {
+router.get(exports.routes.myProfile, auth_middleware_1.auth, (req, res) => {
     const user = req.user;
     (0, success_response_1.successResponse)({
         res,
         data: {
-            user
+            user,
         },
+    });
+});
+router.post(exports.routes.sendFriendRequest, (0, validation_middleware_1.validation)(userValidation.sendFriendRequestSchema), auth_middleware_1.auth, async (req, res) => {
+    const { to } = req.body;
+    const { id: from } = req.user;
+    const data = await user_service_1.default.sendFriendRequest({ to, from });
+    (0, success_response_1.successResponse)({
+        res,
+        message: "Friend request sent successfully",
+        data
+    });
+});
+router.patch(exports.routes.friendRequestReply, (0, validation_middleware_1.validation)(userValidation.friendRequestReplySchema), auth_middleware_1.auth, async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    const { id: userId } = req.user;
+    await user_service_1.default.friendRequestReply({ id, status, userId });
+    (0, success_response_1.successResponse)({
+        res,
+        message: "Friend request action taken successfully",
     });
 });
 exports.default = router;

@@ -73,6 +73,9 @@ const UserSchema = new mongoose.Schema<IUser>(
   },
   {
     timestamps: true,
+    strictQuery: true,
+    strict: true,
+    optimisticConcurrency: true,
     toJSON: {
       getters: true,
     },

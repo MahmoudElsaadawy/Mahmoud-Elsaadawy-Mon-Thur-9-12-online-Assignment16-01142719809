@@ -12,7 +12,7 @@ class AppError extends Error {
 }
 exports.AppError = AppError;
 class NotFoundException extends AppError {
-    constructor(message = "not found", options = {}) {
+    constructor(message = "Not found", options = {}) {
         super(message, options, 404);
     }
 }
@@ -37,7 +37,7 @@ class ConflictException extends AppError {
 exports.ConflictException = ConflictException;
 class validationException extends AppError {
     constructor(validationErrors, options = {}) {
-        super("validation error", options, 422, validationErrors);
+        super("Validation error", options, 422, validationErrors);
     }
 }
 exports.validationException = validationException;
