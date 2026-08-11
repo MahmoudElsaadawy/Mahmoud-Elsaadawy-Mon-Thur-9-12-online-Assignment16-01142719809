@@ -1,13 +1,18 @@
-import { type Request, Response } from "express";
 import User from "../user/models/user.model";
 import {
   ConflictException,
   BadRequestException,
   UnauthorizedException,
+  NotFoundException,
 } from "../../utils/error.exceptions";
 import { ProviderEnum } from "../user/types/user.types";
 import { compare } from "../../utils/security/hashing";
-import { signUpData, loginData, confirmEmailData } from "./auth.validation";
+import {
+  signUpData,
+  loginData,
+  confirmEmailData,
+  resendOtpData,
+} from "./auth.validation";
 import { generateOtp } from "../../utils/email/generateOtp";
 import { sendEmail } from "../../utils/email/sendEmail";
 import { generateOtpHtml } from "../../utils/email/confirm.template";
@@ -22,6 +27,7 @@ import {
 } from "../../utils/redis/redis.service";
 import { generateToken, verifyToken } from "../../utils/security/token";
 import { nanoid } from "nanoid";
+import { Tokens } from "../../middleware/auth.middleware";
 
 export class AuthServices {
   async signup(data: signUpData) {
@@ -91,12 +97,8 @@ export class AuthServices {
       throw new UnauthorizedException("Invalid email or password");
     }
 
-    if (!user.confirmedAt) {
-      throw new BadRequestException("please confirm your email first");
-    }
-
     if (user.provider > ProviderEnum.system) {
-      throw new BadRequestException("use social login");
+      throw new BadRequestException("Use social login");
     }
 
     const matchedPassword = await compare(password, user.password);
@@ -106,8 +108,8 @@ export class AuthServices {
     }
 
     const jwtAccess = process.env.ACCESS_JWT;
-    const jwtRefresh = process.env.REFRESH_JWT;
     const jwtidAccess = nanoid(20);
+    const jwtRefresh = process.env.REFRESH_JWT;
     const jwtidRefresh = nanoid(20);
 
     if (jwtAccess && jwtRefresh) {
@@ -132,27 +134,42 @@ export class AuthServices {
           jwtid: jwtidRefresh,
         },
       );
-      redisSet(jwtIdKey(user.id, "accessToken"), jwtidAccess, 30);
-      redisSet(jwtIdKey(user.id, "refreshToken"), jwtidRefresh, 7 * 60 * 24);
+      redisSet(jwtIdKey(user.id, Tokens.access), jwtidAccess, 30);
+      redisSet(jwtIdKey(user.id, Tokens.refresh), jwtidRefresh, 7 * 60 * 24);
       return {
         accessToken,
         refreshToken,
       };
     }
+  }
 
-    const userObj = user.toObject();
-    const {
-      _id,
-      __v,
-      isOnline,
-      isActive,
-      password: _password,
-      createdAt,
-      updatedAt,
-      ...safeUserData
-    } = userObj;
+  async resendOtp(data: resendOtpData) {
+    const email = data.email
+    const user = await User.findOne({ email });
+    if (!user) {
+      throw new NotFoundException("User Already Exists");
+    }
+    if (user.confirmedAt) {
+      throw new BadRequestException("Email already confirmed");
+    }
 
-    return safeUserData;
+    const oldOtp = await redisGet(generateOtpKey(user.id));
+    if (oldOtp) {
+      const ttl = await redisTTL(generateOtpKey(user.id));
+      throw new BadRequestException(
+        `Wait for ${Math.ceil(ttl / 60)} minute(s) to resend the otp`,
+      );
+    }
+
+    const otp = generateOtp();
+    sendEmail({
+      to: email,
+      subject: "Confirm your email",
+      html: generateOtpHtml(user.name, otp),
+    });
+
+    redisSet(generateOtpKey(user.id), otp, 5);
+    return { data: {} };
   }
 }
 

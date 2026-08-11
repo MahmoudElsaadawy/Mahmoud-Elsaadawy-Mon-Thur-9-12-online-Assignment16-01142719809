@@ -31,10 +31,17 @@ export const loginSchema = {
 export const confirmEmailSchema = {
   body: z.strictObject({
     email: z.email(),
-    otp: z.string(),
+    otp: z.string().min(6).max(6),
+  }),
+};
+
+export const resendOtpSchema = {
+  body: z.strictObject({
+    email: z.email(),
   }),
 };
 
 export type signUpData = z.infer<typeof signupSchema.body>;
 export type loginData = z.infer<typeof loginSchema.body>;
 export type confirmEmailData = z.infer<typeof confirmEmailSchema.body>;
+export type resendOtpData = z.infer<typeof resendOtpSchema.body>

@@ -24,7 +24,7 @@ class BadRequestException extends AppError {
 }
 exports.BadRequestException = BadRequestException;
 class UnauthorizedException extends AppError {
-    constructor(message, options = {}) {
+    constructor(message = "You are not authorized to preform this action", options = {}) {
         super(message, options, 401);
     }
 }

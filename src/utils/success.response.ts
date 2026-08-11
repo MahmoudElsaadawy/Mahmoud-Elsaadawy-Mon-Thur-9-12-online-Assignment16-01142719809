@@ -1,4 +1,4 @@
-import { type Response } from "express";
+import { Response } from "express";
 
 interface ISuccessResponse<T> {
   res: Response;

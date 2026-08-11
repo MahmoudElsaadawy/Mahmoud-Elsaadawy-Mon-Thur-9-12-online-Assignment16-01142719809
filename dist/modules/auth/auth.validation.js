@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.confirmEmailSchema = exports.loginSchema = exports.signupSchema = void 0;
+exports.resendOtpSchema = exports.confirmEmailSchema = exports.loginSchema = exports.signupSchema = void 0;
 const zod_1 = __importDefault(require("zod"));
 const user_types_1 = require("../user/types/user.types");
 exports.signupSchema = {
@@ -34,6 +34,11 @@ exports.loginSchema = {
 exports.confirmEmailSchema = {
     body: zod_1.default.strictObject({
         email: zod_1.default.email(),
-        otp: zod_1.default.string(),
+        otp: zod_1.default.string().min(6).max(6),
+    }),
+};
+exports.resendOtpSchema = {
+    body: zod_1.default.strictObject({
+        email: zod_1.default.email(),
     }),
 };

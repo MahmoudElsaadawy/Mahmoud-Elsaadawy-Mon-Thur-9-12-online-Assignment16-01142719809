@@ -25,7 +25,7 @@ export class BadRequestException extends AppError {
 }
 
 export class UnauthorizedException extends AppError {
-  constructor(message: string, options: ErrorOptions = {}){
+  constructor(message: string = "You are not authorized to preform this action", options: ErrorOptions = {}){
     super(message, options, 401)
   }
 }
