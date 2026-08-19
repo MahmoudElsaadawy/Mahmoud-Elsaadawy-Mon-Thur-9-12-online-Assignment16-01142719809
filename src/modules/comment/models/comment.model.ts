@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
-import { IPost, PostPrivacyEnum } from "../types/post.types";
+import { IComment } from "../types/comment.types";
 
-export const commentSchema = new mongoose.Schema<IPost>({
-  content: {
+export const commentSchema = new mongoose.Schema<IComment>({
+  text: {
     type: String,
     required: function(this) {
-      return this.attachments.length == 0
+      return !this.attachments || this.attachments.length == 0
     }
   },
   attachments: {

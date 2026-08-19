@@ -3,17 +3,17 @@ import {
   sendFriendRequestData,
   friendRequestReplyData,
   cancelFriendRequestData,
-} from "./user.validation";
-import User from "./models/user.model";
+} from "./friend.validation";
+import User from "./models/friendRequest.model";
 import {
   BadRequestException,
   NotFoundException,
   UnauthorizedException,
 } from "../../utils/error.exceptions";
-import FriendRequest from "../friendRequests/models/friendRequest.model";
-import { FriendRequestEnum } from "../friendRequests/types/friendRequest.types";
+import FriendRequest from "./models/friendRequest.model";
+import { FriendRequestEnum } from "./types/friendRequest.types";
 
-export class UserServices {
+export class friendRequestServices {
   async sendFriendRequest({
     to,
     from,
@@ -135,4 +135,4 @@ export class UserServices {
   }
 }
 
-export default new UserServices();
+export default new friendRequestServices();

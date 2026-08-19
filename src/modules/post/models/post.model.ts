@@ -23,6 +23,10 @@ export const postSchema = new mongoose.Schema<IPost>({
     type: Number,
     default: PostPrivacyEnum.public
   },
+  comments: {
+    type: [mongoose.Types.ObjectId],
+    ref: "Comment"
+  },
   createdBy: {
     type: mongoose.Types.ObjectId,
     ref: "User",

@@ -36,31 +36,26 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.bootstrap = void 0;
-const express_1 = __importDefault(require("express"));
-const chalk_1 = __importDefault(require("chalk"));
-const morgan_1 = __importDefault(require("morgan"));
-const mongoose_connection_1 = require("./DB/mongoose.connection");
-const error_exceptions_1 = require("./utils/error.exceptions");
-const auth_controller_1 = __importStar(require("./modules/auth/auth.controller"));
-const user_controller_1 = __importStar(require("./modules/user/user.controller"));
-const post_controller_1 = __importStar(require("./modules/post/post.controller"));
-const comment_controller_1 = __importStar(require("./modules/comment/comment.controller"));
-const redis_connection_1 = require("./DB/redis.connection");
-const bootstrap = async () => {
-    const app = (0, express_1.default)();
-    const port = process.env.PORT;
-    await (0, mongoose_connection_1.connectDB)();
-    await redis_connection_1.redisClient.connect();
-    app.use(express_1.default.json());
-    app.use((0, morgan_1.default)("dev"));
-    app.use(auth_controller_1.routes.base, auth_controller_1.default);
-    app.use(user_controller_1.routes.base, user_controller_1.default);
-    app.use(post_controller_1.routes.base, post_controller_1.default);
-    app.use(comment_controller_1.routes.base, comment_controller_1.default);
-    app.use(error_exceptions_1.globalErrorHandler);
-    app.listen(port, () => {
-        console.log(chalk_1.default.bgGreen(`Server is running on port ${port}`));
-    });
+exports.routes = void 0;
+const express_1 = require("express");
+const auth_middleware_1 = require("../../middleware/auth.middleware");
+const validation_middleware_1 = require("../../middleware/validation.middleware");
+const success_response_1 = require("../../utils/success.response");
+const commentValidation = __importStar(require("./comment.validation"));
+const comment_service_1 = __importDefault(require("./comment.service"));
+const router = (0, express_1.Router)();
+exports.routes = {
+    base: "/comments",
+    createComment: "/:postId"
 };
-exports.bootstrap = bootstrap;
+router.post(exports.routes.createComment, auth_middleware_1.auth, (0, validation_middleware_1.validation)(commentValidation.createCommentValidation), async (req, res) => {
+    const user = req.user;
+    const postId = req.params.postId;
+    const { text, attachment } = req.body;
+    await comment_service_1.default.createComment(postId, user, text, attachment);
+    (0, success_response_1.successResponse)({
+        res,
+        message: "Comment created successfully",
+    });
+});
+exports.default = router;

@@ -6,6 +6,7 @@ import { globalErrorHandler, NotFoundException } from "./utils/error.exceptions"
 import authRouter, { routes as authRoutes} from "./modules/auth/auth.controller"
 import userRouter, { routes as userRoutes} from "./modules/user/user.controller"
 import postRouter, { routes as postRoutes} from "./modules/post/post.controller"
+import commentRouter, { routes as commentRoutes} from "./modules/comment/comment.controller"
 import { redisClient } from "./DB/redis.connection"
 
 export const bootstrap = async()=> {
@@ -21,6 +22,7 @@ export const bootstrap = async()=> {
   app.use(authRoutes.base, authRouter)
   app.use(userRoutes.base, userRouter)
   app.use(postRoutes.base, postRouter)
+  app.use(commentRoutes.base, commentRouter)
 
   app.use(globalErrorHandler)
   app.listen(port, ()=> {

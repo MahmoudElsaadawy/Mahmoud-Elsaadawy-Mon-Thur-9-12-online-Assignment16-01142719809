@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.cancelFriendRequestSchema = exports.friendRequestReplySchema = exports.sendFriendRequestSchema = void 0;
 const mongoose_1 = require("mongoose");
 const zod_1 = __importDefault(require("zod"));
-const friendRequest_types_1 = require("../friendRequests/types/friendRequest.types");
+const friendRequest_types_1 = require("./types/friendRequest.types");
 exports.sendFriendRequestSchema = {
     body: zod_1.default.strictObject({
         to: zod_1.default.string().refine((value) => {

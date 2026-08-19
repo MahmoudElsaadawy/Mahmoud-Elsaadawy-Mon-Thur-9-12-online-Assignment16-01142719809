@@ -3,18 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postSchema = void 0;
+exports.commentSchema = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
-const post_types_1 = require("../types/post.types");
-exports.postSchema = new mongoose_1.default.Schema({
-    title: {
-        type: String,
-        required: true
-    },
-    content: {
+exports.commentSchema = new mongoose_1.default.Schema({
+    text: {
         type: String,
         required: function () {
-            return this.attachments.length == 0;
+            return !this.attachments || this.attachments.length == 0;
         }
     },
     attachments: {
@@ -23,14 +18,6 @@ exports.postSchema = new mongoose_1.default.Schema({
     likes: {
         type: [mongoose_1.default.Types.ObjectId],
         ref: "User"
-    },
-    privacy: {
-        type: Number,
-        default: post_types_1.PostPrivacyEnum.public
-    },
-    comments: {
-        type: [mongoose_1.default.Types.ObjectId],
-        ref: "Comment"
     },
     createdBy: {
         type: mongoose_1.default.Types.ObjectId,
@@ -49,5 +36,5 @@ exports.postSchema = new mongoose_1.default.Schema({
         getters: true,
     },
 });
-const postModel = mongoose_1.default.model("Post", exports.postSchema);
-exports.default = postModel;
+const commentModel = mongoose_1.default.model("Comment", exports.commentSchema);
+exports.default = commentModel;

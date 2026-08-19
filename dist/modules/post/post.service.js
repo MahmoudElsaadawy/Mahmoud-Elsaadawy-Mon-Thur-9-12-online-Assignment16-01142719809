@@ -4,8 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const post_model_1 = __importDefault(require("./models/post.model"));
-const friendRequest_model_1 = __importDefault(require("../user/models/friendRequest.model"));
-const friendRequest_types_1 = require("../user/types/friendRequest.types");
+const friendRequest_model_1 = __importDefault(require("../friendRequests/models/friendRequest.model"));
+const friendRequest_types_1 = require("../friendRequests/types/friendRequest.types");
 const post_types_1 = require("./types/post.types");
 const user_service_1 = __importDefault(require("../user/user.service"));
 class postServices {

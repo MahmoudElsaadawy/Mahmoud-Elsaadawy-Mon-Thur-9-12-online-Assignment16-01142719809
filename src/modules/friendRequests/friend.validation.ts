@@ -1,6 +1,6 @@
 import { isValidObjectId } from "mongoose";
 import z from "zod";
-import { FriendRequestEnum } from "../friendRequests/types/friendRequest.types";
+import { FriendRequestEnum } from "./types/friendRequest.types";
 
 export const sendFriendRequestSchema = {
   body: z.strictObject({

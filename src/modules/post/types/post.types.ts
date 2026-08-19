@@ -12,6 +12,7 @@ export interface IPost {
   attachments: Array<string>
   likes: Array<Types.ObjectId>
   privacy: PostPrivacyEnum
+  comments: Array<Types.ObjectId>
   createdBy: Types.ObjectId
 }
 

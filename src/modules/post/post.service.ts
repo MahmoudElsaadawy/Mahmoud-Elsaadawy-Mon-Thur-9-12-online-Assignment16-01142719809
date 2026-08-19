@@ -1,7 +1,7 @@
 import PostModel from "./models/post.model";
 import { createPostData } from "./post.validation";
-import FriendRequest from "../user/models/friendRequest.model";
-import { FriendRequestEnum } from "../user/types/friendRequest.types";
+import FriendRequest from "../friendRequests/models/friendRequest.model";
+import { FriendRequestEnum } from "../friendRequests/types/friendRequest.types";
 import { HUser } from "../user/types/user.types";
 import { PostPrivacyEnum } from "./types/post.types";
 import userServices from "../user/user.service";
