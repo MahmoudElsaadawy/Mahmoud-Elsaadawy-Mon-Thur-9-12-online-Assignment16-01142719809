@@ -32,13 +32,6 @@ class AuthServices {
             role,
             bio: bio ? bio : "",
         });
-        const otp = (0, generateOtp_1.generateOtp)();
-        (0, sendEmail_1.sendEmail)({
-            to: email,
-            subject: "Confirm your email",
-            html: (0, confirm_template_1.generateOtpHtml)(name, otp),
-        });
-        (0, redis_service_1.redisSet)((0, redis_service_1.generateOtpKey)(userCreated.id), otp, 5);
         return userCreated;
     }
     async confirmEmail(data) {

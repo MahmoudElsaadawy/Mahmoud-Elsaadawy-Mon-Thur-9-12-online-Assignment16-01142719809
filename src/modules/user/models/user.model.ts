@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 import { IUser, GenderEnum, ProviderEnum, RoleEnum } from "../types/user.types";
 import { hash } from "../../../utils/security/hashing";
 import { encrypt, decrypt } from "../../../utils/security/encryption";
+import { generateOtp } from "../../../utils/email/generateOtp";
+import { sendEmail } from "../../../utils/email/sendEmail";
+import { generateOtpHtml } from "../../../utils/email/confirm.template";
+import { generateOtpKey, redisSet } from "../../../utils/redis/redis.service";
 
 const UserSchema = new mongoose.Schema<IUser>(
   {
@@ -88,6 +92,18 @@ const UserSchema = new mongoose.Schema<IUser>(
 UserSchema.pre("save", async function () {
   if (this.isModified("password")) {
     this.password = await hash(this.password);
+  }
+});
+
+UserSchema.pre("save", async function () {
+  if (this.isModified("email")) {
+    const otp = generateOtp();
+    sendEmail({
+      to: this.email,
+      subject: "Confirm your email",
+      html: generateOtpHtml(this.name, otp),
+    });
+    redisSet(generateOtpKey(this.id), otp, 5);
   }
 });
 

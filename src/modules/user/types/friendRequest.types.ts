@@ -3,7 +3,8 @@ import { HydratedDocument, Types } from "mongoose"
 export enum FriendRequestEnum {
   pending,
   accepted,
-  rejected
+  rejected,
+  canceled,
 }
 
 export interface IFriendRequest {

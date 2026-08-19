@@ -49,6 +49,9 @@ exports.routes = {
     myProfile: "/profile",
     sendFriendRequest: "/send-friend-request",
     friendRequestReply: "/friend-request-reply/:id",
+    listFriendRequests: "/list-friend-requests",
+    cancelFriendRequest: "/cancel-friend-request/:id",
+    listFriends: "/list-friends",
 };
 router.get(exports.routes.myProfile, auth_middleware_1.auth, (req, res) => {
     const user = req.user;
@@ -66,7 +69,7 @@ router.post(exports.routes.sendFriendRequest, (0, validation_middleware_1.valida
     (0, success_response_1.successResponse)({
         res,
         message: "Friend request sent successfully",
-        data
+        data,
     });
 });
 router.patch(exports.routes.friendRequestReply, (0, validation_middleware_1.validation)(userValidation.friendRequestReplySchema), auth_middleware_1.auth, async (req, res) => {
@@ -77,6 +80,32 @@ router.patch(exports.routes.friendRequestReply, (0, validation_middleware_1.vali
     (0, success_response_1.successResponse)({
         res,
         message: "Friend request action taken successfully",
+    });
+});
+router.get(exports.routes.listFriendRequests, auth_middleware_1.auth, async (req, res) => {
+    const { id } = req.user;
+    const { sent = false } = req.query;
+    const data = await user_service_1.default.listFriendRequests(id, JSON.parse(sent));
+    (0, success_response_1.successResponse)({
+        res,
+        data,
+    });
+});
+router.patch(exports.routes.cancelFriendRequest, (0, validation_middleware_1.validation)(userValidation.cancelFriendRequestSchema), auth_middleware_1.auth, async (req, res) => {
+    const userId = req.user.id;
+    const { id } = req.params;
+    const data = await user_service_1.default.cancelFriendRequest({ userId, id });
+    (0, success_response_1.successResponse)({
+        res,
+        message: "Friend request canceled successfully",
+    });
+});
+router.get(exports.routes.listFriends, auth_middleware_1.auth, async (req, res) => {
+    const userId = req.user.id;
+    const data = await user_service_1.default.listFriends(userId);
+    (0, success_response_1.successResponse)({
+        res,
+        data,
     });
 });
 exports.default = router;

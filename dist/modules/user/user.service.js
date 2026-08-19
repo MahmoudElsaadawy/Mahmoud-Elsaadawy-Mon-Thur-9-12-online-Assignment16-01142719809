@@ -9,7 +9,7 @@ const error_exceptions_1 = require("../../utils/error.exceptions");
 const friendRequest_model_1 = __importDefault(require("./models/friendRequest.model"));
 const friendRequest_types_1 = require("./types/friendRequest.types");
 class UserServices {
-    async sendFriendRequest({ to, from }) {
+    async sendFriendRequest({ to, from, }) {
         const receiver = await user_model_1.default.findById(to);
         if (!receiver) {
             throw new error_exceptions_1.NotFoundException("User not found");
@@ -35,7 +35,7 @@ class UserServices {
         });
         return { RequestId: request.id };
     }
-    async friendRequestReply({ id, status, userId }) {
+    async friendRequestReply({ id, status, userId, }) {
         const friendRequest = await friendRequest_model_1.default.findById(id);
         if (!friendRequest) {
             throw new error_exceptions_1.NotFoundException("Friend request not found");
@@ -49,6 +49,64 @@ class UserServices {
         friendRequest.status = status;
         await friendRequest.save();
         return { data: {} };
+    }
+    async listFriendRequests(userId, sent) {
+        const filter = {
+            to: userId,
+            status: friendRequest_types_1.FriendRequestEnum.pending,
+        };
+        if (sent) {
+            delete filter.to;
+            filter.from = userId;
+        }
+        const friendRequests = await friendRequest_model_1.default.find(filter);
+        return { friendRequests };
+    }
+    async cancelFriendRequest({ userId, id, }) {
+        const friendRequest = await friendRequest_model_1.default.findById(id);
+        if (!friendRequest) {
+            throw new error_exceptions_1.NotFoundException("Friend request not found");
+        }
+        if (friendRequest.from.toString() != userId) {
+            throw new error_exceptions_1.UnauthorizedException();
+        }
+        if (friendRequest.status != friendRequest_types_1.FriendRequestEnum.pending) {
+            throw new error_exceptions_1.BadRequestException("This friend request can not be canceled");
+        }
+        friendRequest.status = friendRequest_types_1.FriendRequestEnum.canceled;
+        await friendRequest.save();
+        return { data: {} };
+    }
+    async listFriends(userId) {
+        const friendRequests = await friendRequest_model_1.default.find({
+            $or: [{ from: userId }, { to: userId }],
+            status: friendRequest_types_1.FriendRequestEnum.accepted,
+        }).populate([
+            {
+                path: "to",
+                select: "email name phone",
+                match: {
+                    _id: {
+                        $ne: userId,
+                    },
+                },
+            },
+            {
+                path: "from",
+                select: "email name phone",
+                match: {
+                    _id: {
+                        $ne: userId,
+                    },
+                },
+            },
+        ]);
+        const friends = friendRequests.map((req) => {
+            return req.to || req.from;
+        });
+        return {
+            friendRequests,
+        };
     }
 }
 exports.UserServices = UserServices;

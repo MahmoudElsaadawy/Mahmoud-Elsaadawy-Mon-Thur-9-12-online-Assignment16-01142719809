@@ -30,6 +30,24 @@ export const friendRequestReplySchema = {
   }),
 };
 
-export type sendFriendRequestData = z.infer<typeof sendFriendRequestSchema.body>;
-export type friendRequestReplyData = z.infer<typeof friendRequestReplySchema.body> &
+export const cancelFriendRequestSchema = {
+  params: z.strictObject({
+    id: z.string().refine(
+      (value) => {
+        return isValidObjectId(value);
+      },
+      { error: "Invalid id value" },
+    ),
+  }),
+};
+
+export type sendFriendRequestData = z.infer<
+  typeof sendFriendRequestSchema.body
+>;
+export type friendRequestReplyData = z.infer<
+  typeof friendRequestReplySchema.body
+> &
   z.infer<typeof friendRequestReplySchema.params>;
+export type cancelFriendRequestData = z.infer<
+  typeof cancelFriendRequestSchema.params
+>;

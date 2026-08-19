@@ -12,6 +12,9 @@ export const routes = {
   myProfile: "/profile",
   sendFriendRequest: "/send-friend-request",
   friendRequestReply: "/friend-request-reply/:id",
+  listFriendRequests: "/list-friend-requests",
+  cancelFriendRequest: "/cancel-friend-request/:id",
+  listFriends: "/list-friends",
 };
 
 router.get(routes.myProfile, auth, (req, res) => {
@@ -35,7 +38,7 @@ router.post(
     successResponse({
       res,
       message: "Friend request sent successfully",
-      data
+      data,
     });
   },
 );
@@ -45,15 +48,52 @@ router.patch(
   validation(userValidation.friendRequestReplySchema),
   auth,
   async (req, res) => {
-    const { id } = req.params as {id: string}
-    const { status } = req.body
-    const { id: userId } = req.user
-    await userServices.friendRequestReply({id, status, userId})
+    const { id } = req.params as { id: string };
+    const { status } = req.body;
+    const { id: userId } = req.user;
+    await userServices.friendRequestReply({ id, status, userId });
     successResponse({
       res,
       message: "Friend request action taken successfully",
     });
   },
 );
+
+router.get(routes.listFriendRequests, auth, async (req, res) => {
+  const { id } = req.user;
+  const { sent = false } = req.query;
+  const data = await userServices.listFriendRequests(
+    id,
+    JSON.parse(sent as string),
+  );
+  successResponse({
+    res,
+    data,
+  });
+});
+
+router.patch(
+  routes.cancelFriendRequest,
+  validation(userValidation.cancelFriendRequestSchema),
+  auth,
+  async (req, res) => {
+    const userId = req.user.id;
+    const { id } = req.params as userValidation.cancelFriendRequestData;
+    const data = await userServices.cancelFriendRequest({ userId, id });
+    successResponse({
+      res,
+      message: "Friend request canceled successfully",
+    });
+  },
+);
+
+router.get(routes.listFriends, auth, async (req, res) => {
+  const userId = req.user.id;
+  const data = await userServices.listFriends(userId);
+  successResponse({
+    res,
+    data,
+  });
+});
 
 export default router;

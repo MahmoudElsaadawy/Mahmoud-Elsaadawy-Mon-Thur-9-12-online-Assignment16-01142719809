@@ -7,6 +7,10 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const user_types_1 = require("../types/user.types");
 const hashing_1 = require("../../../utils/security/hashing");
 const encryption_1 = require("../../../utils/security/encryption");
+const generateOtp_1 = require("../../../utils/email/generateOtp");
+const sendEmail_1 = require("../../../utils/email/sendEmail");
+const confirm_template_1 = require("../../../utils/email/confirm.template");
+const redis_service_1 = require("../../../utils/redis/redis.service");
 const UserSchema = new mongoose_1.default.Schema({
     name: {
         type: String,
@@ -88,6 +92,17 @@ const UserSchema = new mongoose_1.default.Schema({
 UserSchema.pre("save", async function () {
     if (this.isModified("password")) {
         this.password = await (0, hashing_1.hash)(this.password);
+    }
+});
+UserSchema.pre("save", async function () {
+    if (this.isModified("email")) {
+        const otp = (0, generateOtp_1.generateOtp)();
+        (0, sendEmail_1.sendEmail)({
+            to: this.email,
+            subject: "Confirm your email",
+            html: (0, confirm_template_1.generateOtpHtml)(this.name, otp),
+        });
+        (0, redis_service_1.redisSet)((0, redis_service_1.generateOtpKey)(this.id), otp, 5);
     }
 });
 const userModel = mongoose_1.default.model("User", UserSchema);

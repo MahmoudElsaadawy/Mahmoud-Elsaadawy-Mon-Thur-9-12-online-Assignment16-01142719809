@@ -44,6 +44,7 @@ const mongoose_connection_1 = require("./DB/mongoose.connection");
 const error_exceptions_1 = require("./utils/error.exceptions");
 const auth_controller_1 = __importStar(require("./modules/auth/auth.controller"));
 const user_controller_1 = __importStar(require("./modules/user/user.controller"));
+const post_controller_1 = __importStar(require("./modules/post/post.controller"));
 const redis_connection_1 = require("./DB/redis.connection");
 const bootstrap = async () => {
     const app = (0, express_1.default)();
@@ -54,6 +55,7 @@ const bootstrap = async () => {
     app.use((0, morgan_1.default)("dev"));
     app.use(auth_controller_1.routes.base, auth_controller_1.default);
     app.use(user_controller_1.routes.base, user_controller_1.default);
+    app.use(post_controller_1.routes.base, post_controller_1.default);
     app.use(error_exceptions_1.globalErrorHandler);
     app.listen(port, () => {
         console.log(chalk_1.default.bgGreen(`Server is running on port ${port}`));

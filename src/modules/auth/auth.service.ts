@@ -47,14 +47,6 @@ export class AuthServices {
       bio: bio ? bio : "",
     });
 
-    const otp = generateOtp();
-    sendEmail({
-      to: email,
-      subject: "Confirm your email",
-      html: generateOtpHtml(name, otp),
-    });
-
-    redisSet(generateOtpKey(userCreated.id), otp, 5);
     return userCreated;
   }
 
